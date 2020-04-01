@@ -1,4 +1,4 @@
-#!/env/bin python3
+#!env/bin/python3
 # -*- coding: utf-8 -*-
 # SourceSeeker – Main script
 # Author: LulzLoL231
@@ -8,13 +8,24 @@ from datetime import datetime
 
 import discord
 
-from config import *
+import config
+import utils
+import models
 
 
 class SourceSeeker(discord.Client):
     def __init__(self):
         super().__init__()
         self.messages = {}
+        self.servers = []
+        self.InitServers()
+
+    def InitServers(self):
+        utils.log('InitServers', 'Initiating servers objects...')
+        for i in config.servers:
+            self.servers.append(models.Server.FromDict(i))
+        utils.log('InitServers', f'Initiated {str(len(self.servers))} server\'s.')
+        return True
 
     def IsMe(self, msg):
         return msg.author == bot.user
@@ -33,34 +44,56 @@ class SourceSeeker(discord.Client):
                 self.messages[server.server_name].append(await ch.send(embed=server.GetEmbed()))
 
     async def Seek(self):
-        for i in servers:
-            if i.IsMapChange():
-                i.UpdateInfo()
-                await self.SendServerInfo(i)
-            elif i.IsPlayerCountChange():
-                if i.refresh:
+        utils.log('Seek', 'seeking...')
+        while True:
+            for i in self.servers:
+                if i.IsMapChange():
                     i.UpdateInfo()
                     await self.SendServerInfo(i)
-                else:
-                    pass
+                elif i.IsPlayerCountChange():
+                    if i.refresh:
+                        i.UpdateInfo()
+                        await self.SendServerInfo(i)
+                    else:
+                        pass
+            await asyncio.sleep(5)
 
     async def PurgeMsgs(self):
-        for serv in servers:
+        for serv in self.servers:
             for chid in serv.channels:
                 ch = bot.get_channel(chid)
                 if serv.refresh:
-                    await ch.purge(limit=200, check=self.IsMe)
+                    await ch.purge(limit=50, check=self.IsMe)
+                    return True
                 else:
                     await ch.purge(limit=1, check=self.IsMe)
+                    return True
 
     async def on_ready(self):
+        utils.log('SourceSeeker', f'Bot logged in as {str(bot.user)}')
+        utils.log('on_ready', 'Purging messages...')
         await self.PurgeMsgs()
-        for i in servers:
+        utils.log('on_ready', 'Messages purged.')
+        utils.log('on_ready', 'Sending Servers Info...')
+        for i in self.servers:
             await self.SendServerInfo(i)
-        while True:
-            await self.Seek()
-            sleep(5)
+        await self.Seek()
+
+    async def on_message(self, msg):
+        if self.IsMe(msg):
+            pass
+        else:
+            if msg.content.startswith(':'):
+                utils.log('on_message', 'We have new message!')
+                if msg.author == bot.get_user(config.admin):
+                    utils.log('on_message', f'User: {str(msg.author)} [ADMIN] – {str(msg.content)}')
+                    await msg.channel.send('Sorry ADMIN, i\'m temporary can\'t answer on an messages.')
+                else:
+                    utils.log('on_message', f'User: {str(msg.author)} – {str(msg.content)}')
+                    await msg.channel.send('Sorry, i\'m temporary can\'t answer on an messages.')
+
 
 if __name__ == '__main__':
+    utils.log('SourceSeeker', 'Startup...')
     bot = SourceSeeker()
-    bot.run(token)
+    bot.run(config.token)

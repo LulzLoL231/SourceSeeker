@@ -7,14 +7,7 @@ from datetime import datetime
 import a2s
 from discord import Embed, Colour
 
-
-def log(message, type):
-    if os.path.isfile('SourceSeeker.log'):
-        if os.path.getsize('SourceSeeker.log') >= 1073741824:
-            os.remove('SourceSeeker.log')
-    with open('SourceSeeker.log', 'w') as file:
-        file.write(f'[ {str(datetime.now())} ] // ( {type} ) – {message}')
-        file.close()
+from utils import log
 
 
 def GetServerInfo(addr):
@@ -24,7 +17,7 @@ def GetServerInfo(addr):
         try:
             i = a2s.info(addr)
         except Exception as e:
-            log(f'func "GetServerInfo": Address [{str(addr)}] – {e}')
+            log('GetServerInfo', f'Server: {str(addr)} – {e}', 'warn')
             if iter <= 5:
                 return None
             else:
@@ -79,17 +72,25 @@ def GetEmbedDict(server=None, SteamURI=None, inline=False, offline=False):
 
 
 class Server:
-    def __init__(self, address, channels, inline, refresh):
+    def __init__(self, address, channels, inline, refresh, memo=None):
         self.address = address
         self.info = GetServerInfo(address)
         if self.info is None:
-            self.server_name = 'Unknown Source Server'
+            if memo is None:
+                self.server_name = 'Unknown Source Server'
+            else:
+                self.server_name = memo
         else:
             self.server_name = self.info.server_name
         self.SteamURI = GetFastConnectURI(address)
         self.channels = channels
         self.inline = inline
         self.refresh = refresh
+        self.memo = memo
+
+    def FromDict(dict):
+        if len(dict.keys()) == 5:
+            return Server(dict['addr'], dict['channels'], dict['inline'], dict['refresh'], dict['memo'])
 
     def GetEmbed(self):
         if self.info is None:
