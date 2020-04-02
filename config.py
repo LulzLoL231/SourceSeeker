@@ -2,8 +2,11 @@
 # SourceSeeker – config
 # Author: LulzLoL231
 import logging
+
+
 debug         = True          # SourceSeeker Debug mode.
 logging_level = logging.INFO  # Logger level.
+systemd_log   = False         # Set to "True", if you want logging to systemd
 
 ###   APPEND HERE YOUR Discord CREDENTIALS    ###
 #
@@ -12,12 +15,12 @@ logging_level = logging.INFO  # Logger level.
 #     DISCORD_TOKEN – Your discord bot token
 #
 token = 'NjgyMjY2NDYxODA0NDI5NDI2.XoRAxA.7BbRNaE0-BA9dOCNstpEQndXaVw'  # LzTestBot
-admin = 399493754517454848
+admin = 399493754517454848  # LulzLoL231#9006 UserID
 
 
 ###   APPEND HERE YOUR Source SERVER   ####
 #
-#     Setup like: Server(address, channels, inline, refresh)
+#     Setup like: {'addr': address, 'channels': channels, 'inline': inline, 'refresh': refresh, 'memo': memo}
 #
 #     address    – server_ip and server_port in tuple
 #     channels   – Discord channels IDs, from "channels" var.
