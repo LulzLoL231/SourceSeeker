@@ -6,13 +6,13 @@ import logging
 
 debug         = True          # SourceSeeker Debug mode.
 logging_level = logging.INFO  # Logger level.
-systemd_log   = False         # Set to "True", if you want logging to systemd
 
 ###   APPEND HERE YOUR Discord CREDENTIALS    ###
 #
 #     Setup like: token = DISCORD_TOKEN
 #
 #     DISCORD_TOKEN – Your discord bot token
+#     admin         – Admin Discord UserID
 #
 token = 'NjgyMjY2NDYxODA0NDI5NDI2.XoRAxA.7BbRNaE0-BA9dOCNstpEQndXaVw'  # LzTestBot
 admin = 399493754517454848  # LulzLoL231#9006 UserID

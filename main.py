@@ -30,6 +30,9 @@ class SourceSeeker(discord.Client):
     def IsMe(self, msg):
         return msg.author == bot.user
 
+    def IsAdmin(self, msg):
+        return msg.author == bot.get_user(config.admin)
+
     async def SendServerInfo(self, server):
         if self.messages.keys().__contains__(server.server_name):
             for i in self.messages[server.server_name]:
@@ -85,7 +88,7 @@ class SourceSeeker(discord.Client):
         else:
             if msg.content.startswith(':'):
                 utils.log('on_message', 'We have new message!')
-                if msg.author == bot.get_user(config.admin):
+                if self.IsAdmin(msg):
                     utils.log('on_message', f'User: {str(msg.author)} [ADMIN] – {str(msg.content)}')
                     await msg.channel.send('Sorry ADMIN, i\'m temporary can\'t answer on an messages.')
                 else:
@@ -94,6 +97,6 @@ class SourceSeeker(discord.Client):
 
 
 if __name__ == '__main__':
-    utils.log('SourceSeeker', 'Startup...')
+    utils.log('SourceSeeker', '--- STARTUP ---')
     bot = SourceSeeker()
     bot.run(config.token)
