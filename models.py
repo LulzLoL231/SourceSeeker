@@ -10,7 +10,7 @@ from discord import Embed, Colour
 from utils import log
 
 
-def GetServerInfo(addr):
+async def GetServerInfo(addr):
     recv = False
     iter = 0
     while recv != True:
@@ -74,14 +74,12 @@ def GetEmbedDict(server=None, SteamURI=None, inline=False, offline=False):
 class Server:
     def __init__(self, address, channels, inline, refresh, memo=None):
         self.address = address
-        self.info = GetServerInfo(address)
+        self.info = None
         if self.info is None:
             if memo is None:
                 self.server_name = 'Unknown Source Server'
             else:
                 self.server_name = memo
-        else:
-            self.server_name = self.info.server_name
         self.SteamURI = GetFastConnectURI(address)
         self.channels = channels
         self.inline = inline
@@ -97,8 +95,8 @@ class Server:
             return Embed.from_dict(GetEmbedDict(offline=self.server_name, SteamURI=self.SteamURI))
         return Embed.from_dict(GetEmbedDict(self.info, self.SteamURI, self.inline))
 
-    def IsMapChange(self):
-        seek = GetServerInfo(self.address)
+    async def IsMapChange(self):
+        seek = await GetServerInfo(self.address)
         if (seek is None) or (self.info is None):
             return True
         elif seek.map_name != self.info.map_name:
@@ -106,15 +104,12 @@ class Server:
         else:
             return False
 
-    def UpdateInfo(self):
-        self.info = GetServerInfo(self.address)
+    async def UpdateInfo(self):
+        self.info = await GetServerInfo(self.address)
         return True
 
-    def GetMap(self):
-        return self.info.map_name
-
-    def IsPlayerCountChange(self):
-        seek = GetServerInfo(self.address)
+    async def IsPlayerCountChange(self):
+        seek = await GetServerInfo(self.address)
         if (seek is None) or (self.info is None):
             return True
         elif seek.player_count != self.info.player_count:
