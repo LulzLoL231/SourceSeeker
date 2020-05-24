@@ -11,6 +11,17 @@ from utils import log
 
 
 async def GetServerInfo(addr):
+    '''Coroutine. Request source server info through a2s protocol.
+
+    Args:
+        addr: Source server str(IP) and int(PORT) in tuple.
+
+    Returns:
+        if successfull:
+            a2s.SourceInfo
+        else:
+            None
+    '''
     recv = False
     iter = 0
     while recv != True:
@@ -29,10 +40,29 @@ async def GetServerInfo(addr):
 
 
 def GetFastConnectURI(addr):
+    '''Get steam connect uri in format `steam://connect//IP:PORT`.
+
+    Args:
+        addr: Source server str(IP) and int(PORT) in tuple.
+
+    Returns:
+        Steam connect uri.
+    '''
     return f'steam://connect/{addr[0]}:{addr[1]}'
 
 
 def GetEmbedDict(server=None, SteamURI=None, inline=False, offline=False):
+    '''Get embed `ready` dict, for transfor to discord.Embed.
+
+    Args:
+        server  : Server object instance.
+        SteamURI: steam connect uri in str.
+        inline  : select embed style. boolean.
+        offline : select embed style, if server online or not. boolean.
+
+    Returns:
+        dict.
+    '''
     embed_wo_inline = {
                     'title': '',
                     'description': '',
@@ -72,7 +102,17 @@ def GetEmbedDict(server=None, SteamURI=None, inline=False, offline=False):
 
 
 class Server:
-    def __init__(self, address, channels, inline, refresh, memo=None):
+    '''Source Server instance. For storage server address, memo, chhannels and etc.
+
+    Args:
+        address : Source server str(IP) and int(PORT) in tuple.
+        channels: Discord channels ids in tuple.
+        refresh : Set seeking style: refresh `one` msg, or send new msg everytime, when source server map is change. boolean.
+        inline  : Set embed style. boolean.
+        memo    : Set source server name in str. optional.
+    '''
+    def __init__(self, address, channels, refresh, inline, memo=None):
+        '''Init class object.'''
         self.address = address
         self.info = None
         if self.info is None:
@@ -86,16 +126,37 @@ class Server:
         self.refresh = refresh
         self.memo = memo
 
-    def FromDict(dict):
-        if len(dict.keys()) == 5:
-            return Server(dict['addr'], dict['channels'], dict['inline'], dict['refresh'], dict['memo'])
+    def FromTuple(tuple):
+        '''Get class instance from tuple.
+
+        Args:
+            tuple: server info in tuple(tuple(IP, PORT), tuple(CHANNELS), bool(INLINE), bool(REFRESH), str(MEMO))
+
+        Returns:
+            models.Server instance.
+        '''
+        if len(tuple) == 5:
+            return Server(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4])
 
     def GetEmbed(self):
+        '''Get discord.Embed for this Server.
+
+        Returns:
+            discord.Embed.
+        '''
         if self.info is None:
             return Embed.from_dict(GetEmbedDict(offline=self.server_name, SteamURI=self.SteamURI))
         return Embed.from_dict(GetEmbedDict(self.info, self.SteamURI, self.inline))
 
     async def IsMapChange(self):
+        '''Coroutine. Get boolean for event server map change.
+
+        Returns:
+            if GetServerInfo.map_name != self.info.map_name:
+                return True
+            else:
+                return False
+        '''
         seek = await GetServerInfo(self.address)
         if (seek is None) or (self.info is None):
             return True
@@ -105,10 +166,22 @@ class Server:
             return False
 
     async def UpdateInfo(self):
+        '''Coroutine. Update self.info.
+
+        Returns:
+            True. Everytime.'''
         self.info = await GetServerInfo(self.address)
         return True
 
     async def IsPlayerCountChange(self):
+        '''Coroutine. Get boolean for event server player_count change.
+
+        Returns:
+            if GetServerInfo.player_count != self.info.player_count:
+                return True
+            else:
+                return False
+        '''
         seek = await GetServerInfo(self.address)
         if (seek is None) or (self.info is None):
             return True
