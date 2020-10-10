@@ -7,6 +7,7 @@ from datetime import datetime
 
 import config
 
+
 def log(func, message, type=None):
     '''Make new record in log file, or stdout.
 
